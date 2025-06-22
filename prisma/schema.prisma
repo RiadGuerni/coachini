@@ -3,7 +3,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -51,6 +50,8 @@ model Account{
   updatedAt DateTime @updatedAt
   coach   Coach? @relation(fields: [coachId], references: [id])
   client   Client? @relation(fields: [clientId], references: [id])
+  senderMessages Message[] @relation("Sender")
+  receiverMessages Message[] @relation("Receiver")
   
 }
 
@@ -95,11 +96,48 @@ model Workout {
   coach     Coach   @relation(fields: [coachId], references: [id])
   client    Client  @relation(fields: [clientId], references: [id])
   subscription Subscription @relation(fields: [subscriptionId], references: [id])
+  exercises Exercise[] 
   
+}
+model Exercise {
+  id        String   @id @default(uuid())
+  workoutId String
+  name      String
+  sets      Int
+  reps      Int
+  weight    Float?
+  type      String
+  muscle    String
+  equipment String
+  instructions String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  workouts  Workout @relation( fields: [workoutId], references: [id])
+}
+model ExerciseTemplate {
+  id        String   @id @default(uuid())
+  name      String
+  type      String
+  muscle    String
+  equipment String
+  instructions String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Message {
+  id       String   @id @default(uuid())
+  content   String
+  senderId  String
+  receiverId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sender    Account @relation("Sender", fields: [senderId], references: [id])
+  receiver  Account @relation("Receiver", fields: [receiverId], references: [id])
 }
 
 enum ROLE {
-  CLIENT
+  CLIENT  
   COACH
 }
 
