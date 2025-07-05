@@ -3,7 +3,7 @@
 // Seed script to populate the database with exercise templates from an external API
 // This script fetches exercises by muscle group and stores them in the database
 import { PrismaClient } from '@prisma/client';
-import { InputExerciseTemplate } from 'src/interfaces/exercise_template';
+import { InputExerciseTemplate } from 'src/common/interfaces/exercise_template';
 import dotenv from 'dotenv';
 import axios from 'axios';
 dotenv.config();
