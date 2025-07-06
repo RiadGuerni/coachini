@@ -15,12 +15,20 @@ export class LocalAuthController {
   async register(@Body() createLocalUserDto: CreateLocalUserDto) {
     const account: Account | null =
       await this.authService.registerWithCredentials(createLocalUserDto);
-    return account;
+    if (!account) {
+      return null;
+    }
+    const accessToken = await this.authService.generateAccessToken(account.id);
+    const refreshToken = await this.authService.generateRefreshToken(account);
+    return { accessToken, refreshToken };
   }
   @Post('login')
   @UseGuards(AuthGuard('local'))
-  login(@Req() req) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-    return req.user;
+  async login(@Req() req) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+    const account: Account = req.user;
+    const accessToken = await this.authService.generateAccessToken(account.id);
+    const refreshToken = await this.authService.generateRefreshToken(account);
+    return { accessToken, refreshToken };
   }
 }

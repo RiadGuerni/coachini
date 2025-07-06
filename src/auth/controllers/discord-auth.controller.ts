@@ -1,9 +1,12 @@
 import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Account } from '@prisma/client';
 import { Request } from 'express';
+import { AuthService } from '../auth.service';
 
 @Controller('auth/discord')
 export class DiscordAuthController {
+  constructor(private readonly authService: AuthService) {}
   @Get()
   @UseGuards(AuthGuard('discord'))
   discordAuth() {
@@ -12,7 +15,10 @@ export class DiscordAuthController {
   }
   @Get('redirect')
   @UseGuards(AuthGuard('discord'))
-  discordAuthRedirect(@Req() req: Request) {
-    return req.user;
+  async discordAuthRedirect(@Req() req: Request) {
+    const account: Account = req.user as Account;
+    const accessToken = await this.authService.generateAccessToken(account.id);
+    const refreshToken = await this.authService.generateRefreshToken(account);
+    return { accessToken, refreshToken };
   }
 }

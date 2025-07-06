@@ -10,11 +10,20 @@ import { GoogleStrategy } from './passport-strategies/google.strategy';
 import { GoogleAuthController } from './controllers/google-auth.controller';
 import { DiscordAuthController } from './controllers/discord-auth.controller';
 import { DiscordStrategy } from './passport-strategies/discord.strategy';
+import { JwtStrategy } from './passport-strategies/jwt.strategy';
+import { AuthController } from './controllers/auth.controller';
 
 @Module({
   imports: [ClientModule, AccountModule, CoachModule, PassportModule],
-  providers: [AuthService, LocalStrategy, GoogleStrategy, DiscordStrategy],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    GoogleStrategy,
+    DiscordStrategy,
+    JwtStrategy,
+  ],
   controllers: [
+    AuthController,
     LocalAuthController,
     GoogleAuthController,
     DiscordAuthController,

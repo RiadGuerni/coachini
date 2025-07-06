@@ -74,6 +74,14 @@ export class AccountService {
     );
     return account;
   }
+  async findAccountById(id: string): Promise<Account | null> {
+    const account: Account | null = await this.prismaService.account.findUnique(
+      {
+        where: { id },
+      },
+    );
+    return account;
+  }
   async updateAccount(account: Account): Promise<Account> {
     const updatedAccount: Account = await this.prismaService.account.update({
       where: { id: account.id },

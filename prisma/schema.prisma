@@ -20,6 +20,7 @@ model Account{
   googleId   String? @unique
   discordId String? @unique
   password  String?
+  refreshToken String? 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   coach   Coach? @relation(fields: [coachId], references: [id])

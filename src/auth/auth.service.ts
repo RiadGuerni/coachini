@@ -11,6 +11,8 @@ import { Profile as DiscordProfile } from 'passport-discord';
 import GooglePayload from 'src/common/interfaces/google-payload';
 import DiscordPayload from 'src/common/interfaces/discord-payload';
 import CreateLocalUserDto from '../common/dtos/create-local-user.dto';
+import { JwtService } from '@nestjs/jwt';
+import { JwtPayload } from 'src/common/interfaces/jwt-payload';
 @Injectable()
 export class AuthService {
   constructor(
@@ -19,6 +21,7 @@ export class AuthService {
     private readonly coachService: CoachService,
     private readonly accountService: AccountService,
     private readonly hashService: HashService,
+    private readonly jwtService: JwtService,
   ) {}
   async registerWithCredentials(
     createLocalUserDto: CreateLocalUserDto,
@@ -45,7 +48,7 @@ export class AuthService {
   async validateUserWithCredentials(
     email: string,
     password: string,
-  ): Promise<Client | Coach | null> {
+  ): Promise<Account | null> {
     const account: Account | null =
       await this.accountService.findAccountByEmail(email);
     if (!account || !account.password) {
@@ -58,17 +61,7 @@ export class AuthService {
       if (!isPasswordValid) {
         return null;
       } else {
-        if (account.role == 'client') {
-          const client: Client | null = await this.clientService.findClientById(
-            account.clientId!,
-          );
-          return client;
-        } else {
-          const coach: Coach | null = await this.coachService.findCoachById(
-            account.coachId!,
-          );
-          return coach;
-        }
+        return account;
       }
     }
   }
@@ -106,6 +99,9 @@ export class AuthService {
       }
       return account;
     }
+  }
+  async validateUserById(id: string): Promise<Account | null> {
+    return await this.accountService.findAccountById(id);
   }
 
   async registerWithGoogle(googlePayload: GooglePayload): Promise<Account> {
@@ -205,5 +201,43 @@ export class AuthService {
       userId: null,
     };
     return discordPayload;
+  }
+  async generateAccessToken(userId: string): Promise<string> {
+    const payload = { userId };
+    const accessToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '15m',
+      secret: process.env.ACCESS_TOKEN_SECRET!,
+    });
+    return accessToken;
+  }
+  async generateRefreshToken(account: Account): Promise<string> {
+    const userId = account.id;
+    const payload = { userId };
+    const refreshToken: string = await this.jwtService.signAsync(payload, {
+      expiresIn: '7d',
+      secret: process.env.REFRESH_TOKEN_SECRET!,
+    });
+    account.refreshToken = refreshToken;
+    await this.accountService.updateAccount(account);
+    return refreshToken;
+  }
+  async validateRefreshToken(token: string): Promise<Account> {
+    const payload: JwtPayload = await this.jwtService.verifyAsync(token, {
+      secret: process.env.REFRESH_TOKEN_SECRET!,
+    });
+    const { userId } = payload;
+    if (!userId) {
+      throw new Error('Invalid token');
+    }
+    const account: Account | null =
+      await this.accountService.findAccountById(userId);
+    if (!account) {
+      throw new Error('Account not found');
+    } else {
+      if (account.refreshToken != token) {
+        throw new Error('Invalid token');
+      }
+      return account;
+    }
   }
 }

@@ -1,19 +1,19 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-local';
 import { AuthService } from '../auth.service';
-import { Client, Coach } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
+import { Account } from '@prisma/client';
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
   constructor(private authService: AuthService) {
     super({ usernameField: 'email' });
   }
   async validate(email: string, password: string) {
-    const user: Client | Coach | null =
+    const account: Account | null =
       await this.authService.validateUserWithCredentials(email, password);
-    if (!user) {
+    if (!account) {
       throw new Error('Invalid credentials');
     }
-    return user;
+    return account;
   }
 }
