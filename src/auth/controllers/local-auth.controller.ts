@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { AuthService } from '../auth.service';
 import { Account } from '@prisma/client';
-import { AuthGuard } from '@nestjs/passport';
 import CreateLocalUserDto from 'src/common/dtos/create-local-user.dto';
+import loginLocalUserDto from 'src/common/dtos/login-local-user.dto';
 
 @Controller('auth/local')
 export class LocalAuthController {
@@ -23,10 +23,9 @@ export class LocalAuthController {
     return { accessToken, refreshToken };
   }
   @Post('login')
-  @UseGuards(AuthGuard('local'))
-  async login(@Req() req) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-    const account: Account = req.user;
+  async login(@Body() loginLocalUserDto: loginLocalUserDto) {
+    const account: Account =
+      await this.authService.validateUserWithCredentials(loginLocalUserDto);
     const accessToken = await this.authService.generateAccessToken(account.id);
     const refreshToken = await this.authService.generateRefreshToken(account);
     return { accessToken, refreshToken };

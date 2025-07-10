@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Profile, Strategy } from 'passport-google-oauth20';
 import { AuthService } from '../auth.service';
@@ -43,8 +43,10 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
   authenticate(req: Request, options: any) {
     const role = req.query.role;
+    if (role != Role.CLIENT && role != Role.COACH) {
+      throw new BadRequestException('Invalid role');
+    }
     const state = JSON.stringify({ role });
-    console.log('State:', state);
     super.authenticate(req, { ...options, state });
   }
 }
