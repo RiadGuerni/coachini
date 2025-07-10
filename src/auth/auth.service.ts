@@ -4,6 +4,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Role } from 'src/common/enums/role.enum';
 import { HashService } from 'src/shared/hash.service';
@@ -257,6 +258,23 @@ export class AuthService {
     };
     return discordPayload;
   }
+
+  async logout(refreshToken: string): Promise<void> {
+    try {
+      const account: Account = await this.validateRefreshToken(refreshToken);
+      account.refreshToken = null;
+      await this.accountService.updateAccount(account);
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      this.logger.error(error.message);
+      if (error instanceof BadRequestException) {
+        throw error; // rethrow the BadRequestException
+      } else {
+        throw new InternalServerErrorException('failed to logout');
+      }
+    }
+  }
+
   async generateAccessToken(userId: string): Promise<string> {
     const payload = { userId };
     try {

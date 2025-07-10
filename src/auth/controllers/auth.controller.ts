@@ -1,18 +1,15 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from '../auth.service';
 import { Account } from '@prisma/client';
-import { AuthGuard } from '@nestjs/passport';
+import { RefreshTokenDto } from 'src/common/dtos/refresh-token.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-  @Get('hello')
-  helloWorld() {
-    return 'Hello from AuthController!';
-  }
+
   @Post('refresh')
-  async refreshToken(@Body() body: { refreshToken: string }) {
-    const { refreshToken } = body;
+  async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
+    const { refreshToken } = refreshTokenDto;
     const account: Account =
       await this.authService.validateRefreshToken(refreshToken);
     const newAccessToken = await this.authService.generateAccessToken(
@@ -20,10 +17,10 @@ export class AuthController {
     );
     return { accessToken: newAccessToken };
   }
-  @Get('restricted')
-  @UseGuards(AuthGuard('jwt'))
-  restricted(@Req() request: any) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-    return request.user;
+  @Post('logout')
+  async logout(@Body() refreshTokenDto: RefreshTokenDto) {
+    const { refreshToken } = refreshTokenDto;
+    await this.authService.logout(refreshToken);
+    return { message: 'Logged out successfully' };
   }
 }
