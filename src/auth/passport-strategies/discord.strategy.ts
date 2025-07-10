@@ -35,6 +35,9 @@ export class DiscordStrategy extends PassportStrategy(Strategy, 'discord') {
       if (!account) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const { role } = JSON.parse(request.query.state as string);
+        if (role != Role.CLIENT && role != Role.COACH) {
+          throw new BadRequestException('Invalid role');
+        }
 
         const discordPayload: DiscordPayload =
           this.authService.buildDiscordPayload(profile, role as Role);
@@ -45,9 +48,7 @@ export class DiscordStrategy extends PassportStrategy(Strategy, 'discord') {
   }
   authenticate(req: Request, options: any) {
     const role = req.query.role;
-    if (role != Role.CLIENT && role != Role.COACH) {
-      throw new BadRequestException('Invalid role');
-    }
+
     const state = JSON.stringify({ role });
     console.log('State:', state);
     super.authenticate(req, { ...options, state });

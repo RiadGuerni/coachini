@@ -32,6 +32,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     if (!account) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const { role } = JSON.parse(request.query.state as string);
+      if (role != Role.CLIENT && role != Role.COACH) {
+        throw new BadRequestException('Invalid role');
+      }
       const googlePayload = this.authService.buildGooglePayload(
         profile,
         role as Role,
@@ -43,9 +46,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
   authenticate(req: Request, options: any) {
     const role = req.query.role;
-    if (role != Role.CLIENT && role != Role.COACH) {
-      throw new BadRequestException('Invalid role');
-    }
     const state = JSON.stringify({ role });
     super.authenticate(req, { ...options, state });
   }
