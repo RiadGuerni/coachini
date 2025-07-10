@@ -4,7 +4,6 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { Role } from 'src/common/enums/role.enum';
 import { HashService } from 'src/shared/hash.service';

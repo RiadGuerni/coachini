@@ -27,7 +27,7 @@ export class GlobalFilter implements ExceptionFilter {
         : HttpStatus.INTERNAL_SERVER_ERROR;
     const message =
       exception instanceof HttpException
-        ? exception.getResponse()
+        ? exception.message
         : 'Internal Server Error';
     this.logger.error(
       `Request ${request.method} ${request.url} failed`,
