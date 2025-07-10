@@ -5,7 +5,6 @@ import { AccountModule } from 'src/account/account.module';
 import { CoachModule } from 'src/coach/coach.module';
 import { PassportModule } from '@nestjs/passport';
 import { LocalAuthController } from './controllers/local-auth.controller';
-import { LocalStrategy } from './passport-strategies/local.strategy';
 import { GoogleStrategy } from './passport-strategies/google.strategy';
 import { GoogleAuthController } from './controllers/google-auth.controller';
 import { DiscordAuthController } from './controllers/discord-auth.controller';
@@ -15,13 +14,7 @@ import { AuthController } from './controllers/auth.controller';
 
 @Module({
   imports: [ClientModule, AccountModule, CoachModule, PassportModule],
-  providers: [
-    AuthService,
-    LocalStrategy,
-    GoogleStrategy,
-    DiscordStrategy,
-    JwtStrategy,
-  ],
+  providers: [AuthService, GoogleStrategy, DiscordStrategy, JwtStrategy],
   controllers: [
     AuthController,
     LocalAuthController,
